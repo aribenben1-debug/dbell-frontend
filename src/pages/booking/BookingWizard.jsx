@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../lib/api.js';
 import Survey from '../../components/Survey.jsx';
+import CitySearch from '../../components/CitySearch.jsx';
+import AddressSearch from '../../components/AddressSearch.jsx';
 import { SURVEY, TRADES_LIST } from '../../data/surveyQuestions.js';
 
 const STEPS = ['Service', 'Questions', 'Provider', 'Schedule', 'Confirm'];
@@ -228,22 +230,12 @@ export default function BookingWizard() {
           {/* Location inputs */}
           <div className="card mb-8 space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Your city</label>
-              <input
-                className="input text-base"
-                placeholder="e.g. Tel Aviv"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">City / Town</label>
+              <CitySearch value={city} onChange={setCity} />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full address</label>
-              <input
-                className="input text-base"
-                placeholder="Street, number, apartment…"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
+              <AddressSearch value={address} onChange={setAddress} city={city} />
             </div>
             <button
               onClick={searchProviders}
@@ -321,11 +313,19 @@ export default function BookingWizard() {
           <div className="space-y-6">
             {/* Date */}
             <div className="card">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Select a date</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Select a date
+                {urgencySurcharge === 50 && (
+                  <span className="ml-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                    🚨 Emergency — today only
+                  </span>
+                )}
+              </label>
               <input
                 type="date"
                 className="input text-base"
                 min={new Date().toISOString().split('T')[0]}
+                max={urgencySurcharge === 50 ? new Date().toISOString().split('T')[0] : undefined}
                 value={selectedDate}
                 onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(''); }}
               />
@@ -359,26 +359,6 @@ export default function BookingWizard() {
                 </div>
               </div>
             )}
-
-            {/* Duration */}
-            <div className="card">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Estimated duration</label>
-              <div className="flex gap-2 flex-wrap">
-                {[0.5, 1, 1.5, 2, 3, 4].map((h) => (
-                  <button
-                    key={h}
-                    onClick={() => setDuration(h)}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                      duration === h
-                        ? 'bg-brand-600 text-white border-brand-600'
-                        : 'bg-white border-gray-200 hover:border-brand-400 text-gray-700'
-                    }`}
-                  >
-                    {h}h
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Price estimate */}
             {selectedSlot && (
@@ -462,7 +442,7 @@ export default function BookingWizard() {
             <div className="card">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Schedule</p>
               <p className="font-bold text-lg">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p className="text-gray-500">{selectedSlot} · {duration} hour{duration !== 1 ? 's' : ''}</p>
+              <p className="text-gray-500">{selectedSlot}</p>
               <p className="text-gray-500 mt-1">📍 {address}, {city}</p>
             </div>
 
